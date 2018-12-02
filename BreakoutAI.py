@@ -3,6 +3,7 @@ import random
 import numpy as np
 import tensorflow as tf
 import time
+import threading
 from collections import deque
 from skimage.color import rgb2gray
 from skimage.transform import resize
@@ -76,7 +77,6 @@ class DQNA:
         self.resume = False # Cargar modelo pasado
         self.render = True # Mostrar el juego
         self.path = './model.h5' # Path para guardar el modelo
-
         self.model = atari_model()
         self.target_model = atari_model()
 
@@ -224,7 +224,7 @@ def train():
                     # if loss > 100.0:
                     #    print(loss)
                     if global_step % agent.refresh == 0:  # update the target model
-                        print('The model was refreshed. Global_step: {}, rrefresh: {}'.format(global_step, agent.refresh))
+                        # print('The model was refreshed. Global_step: {}, rrefresh: {}'.format(global_step, agent.refresh))
                         model_target.set_weights(model.get_weights())
 
                 score += reward
@@ -321,10 +321,22 @@ def test():
                 episode_number += 1
                 print('episode: {}, score: {}'.format(episode_number, score))
 
+
 def main(argv=None):
-    train()
+    #train(1)
+    tr_gen = train()
+    model.fit_generator(generator=tr_gen, steps_per_epoch=20, max_queue_size=10,
+    workers=3, use_multiprocessing=True)
     #test()
+    #threads = []
+    #for i in range(4):
+    #    t = threading.Thread(target=train, args=(i,))
+    #    threads.append(t)
+    #    t.start()
+
+
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    #tf.app.run()
+    main()
